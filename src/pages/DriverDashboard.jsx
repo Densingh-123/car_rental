@@ -25,6 +25,10 @@ import {
   Calendar
 } from 'lucide-react';
 
+// ----------  NEW: pull real user  ----------
+import { useAuth } from '../contexts/AuthContext';
+// ------------------------------------------
+
 // Import components
 import DrivingScore from '../components/driver/DrivingScore';
 import TripHistory from '../components/driver/TripHistory';
@@ -34,12 +38,21 @@ import AlertsNotifications from '../components/driver/AlertsNotifications';
 import StartTripModal from '../components/driver/StartTripModal';
 
 const DriverDashboard = () => {
+  const { currentUser, userProfile } = useAuth(); // << real user
+
   const [activeTab, setActiveTab] = useState('overview');
   const [isOnTrip, setIsOnTrip] = useState(false);
   const [showStartTripModal, setShowStartTripModal] = useState(false);
   const [currentTrip, setCurrentTrip] = useState(null);
   const [driverData, setDriverData] = useState({});
   const [liveData, setLiveData] = useState({});
+
+  // ----------  helper: pick name  ----------
+  const getDisplayName = () =>
+    userProfile?.displayName ||
+    userProfile?.name ||
+    currentUser?.email?.split('@')[0] ||
+    'Raj Kumar';
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Car className="w-4 h-4" /> },
@@ -52,26 +65,27 @@ const DriverDashboard = () => {
   ];
 
   useEffect(() => {
-    // Simulate driver data
+    // Build driver info: real profile first, fallback to sample data
     const driverInfo = {
-      name: 'Raj Kumar',
-      license: 'DL0420181234567',
-      experience: '5 years',
-      contact: '+91 9876543210',
-      email: 'raj.kumar@example.com',
+      name: getDisplayName(),
+      license: userProfile?.license || 'DL0420181234567',
+      experience: userProfile?.experience || '5 years',
+      contact: userProfile?.phone || currentUser?.phoneNumber || '+91 9876543210',
+      email: currentUser?.email || 'raj.kumar@example.com',
       vehicle: {
-        plate: 'KA01AB1234',
-        model: 'Toyota Innova Crysta',
-        fuelType: 'Diesel',
-        capacity: '7 Seater',
-        insurance: '2024-12-31',
-        registration: '2022-01-15'
+        plate: userProfile?.vehiclePlate || 'KA01AB1234',
+        model: userProfile?.vehicleModel || 'Toyota Innova Crysta',
+        fuelType: userProfile?.vehicleFuel || 'Diesel',
+        capacity: userProfile?.vehicleCapacity || '7 Seater',
+        insurance: userProfile?.vehicleInsurance || '2024-12-31',
+        registration: userProfile?.vehicleRegistration || '2022-01-15',
+        fuelLevel: 100
       },
       stats: {
-        totalTrips: 156,
-        totalDistance: 23450,
-        totalHours: 480,
-        rating: 4.8
+        totalTrips: userProfile?.totalTrips || 156,
+        totalDistance: userProfile?.totalDistance || 23450,
+        totalHours: userProfile?.totalHours || 480,
+        rating: userProfile?.rating || 4.8
       }
     };
     setDriverData(driverInfo);
@@ -80,7 +94,7 @@ const DriverDashboard = () => {
     const interval = setInterval(() => {
       setLiveData({
         speed: Math.floor(Math.random() * 100),
-        fuel: Math.max(20, (driverData.vehicle?.fuelLevel || 100) - Math.random() * 0.1),
+        fuel: Math.max(20, (driverInfo.vehicle.fuelLevel) - Math.random() * 0.1),
         engineTemp: 85 + Math.floor(Math.random() * 10),
         battery: 90 + Math.floor(Math.random() * 10),
         location: {
@@ -92,7 +106,7 @@ const DriverDashboard = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser, userProfile]);
 
   const driverStats = [
     { 
@@ -173,7 +187,6 @@ const DriverDashboard = () => {
         duration: (Math.random() * 4 + 1).toFixed(1),
         score: 80 + Math.floor(Math.random() * 20)
       };
-      // Here you would save the trip to your database
       console.log('Trip ended:', endedTrip);
     }
     setCurrentTrip(null);
@@ -191,15 +204,15 @@ const DriverDashboard = () => {
           driverData={driverData}
         />;
       case 'trips':
-        return <TripHistory driverId="driver_123" />;
+        return <TripHistory driverId={currentUser?.uid || 'driver_123'} />;
       case 'performance':
-        return <PerformanceAnalytics driverId="driver_123" />;
+        return <PerformanceAnalytics driverId={currentUser?.uid || 'driver_123'} />;
       case 'vehicle':
         return <VehicleInfo vehicle={driverData.vehicle} liveData={liveData} />;
       case 'analytics':
         return <AnalyticsTab driverData={driverData} />;
       case 'alerts':
-        return <AlertsNotifications driverId="driver_123" />;
+        return <AlertsNotifications driverId={currentUser?.uid || 'driver_123'} />;
       case 'profile':
         return <ProfileTab driverData={driverData} />;
       default:
@@ -259,19 +272,18 @@ const DriverDashboard = () => {
           <div className="flex space-x-6 overflow-x-auto pb-2">
             {tabs.map((tab) => (
               <button
-  key={tab.id}
-  onClick={() => setActiveTab(tab.id)}
-  className={`flex items-center gap-2 py-3 px-3 rounded-md border-b-2 font-semibold text-sm whitespace-nowrap transition-all duration-300 ease-in-out
-    ${
-      activeTab === tab.id
-        ? 'border-blue-500 text-blue-600 bg-blue-50 shadow-inner'
-        : 'border-transparent text-blue-900/70 hover:text-blue-700 hover:border-blue-400 hover:bg-blue-50/70 hover:shadow-sm hover:scale-[1.03]'
-    }`}
->
-  {tab.icon}
-  {tab.label}
-</button>
-
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-3 px-3 rounded-md border-b-2 font-semibold text-sm whitespace-nowrap transition-all duration-300 ease-in-out
+                  ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600 bg-blue-50 shadow-inner'
+                      : 'border-transparent text-blue-900/70 hover:text-blue-700 hover:border-blue-400 hover:bg-blue-50/70 hover:shadow-sm hover:scale-[1.03]'
+                  }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
             ))}
           </div>
         </div>
@@ -303,6 +315,8 @@ const DriverDashboard = () => {
     </div>
   );
 };
+
+// ----------  everything below is 100 % unchanged  ----------
 
 // Overview Tab Component
 const OverviewTab = ({ driverStats, recentAlerts, liveData, currentTrip, driverData }) => {
@@ -483,85 +497,83 @@ const AnalyticsTab = ({ driverData }) => {
     { day: 'Sun', trips: 2, score: 95, distance: 120 }
   ];
 
-return (
-  <div className="space-y-6">
-  {/* Weekly Performance */}
-  <div className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-900 mb-6">Driving Analytics</h2>
+  return (
+    <div className="space-y-6">
+      {/* Weekly Performance */}
+      <div className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-lg">
+        <h2 className="text-2xl font-bold text-blue-900 mb-6">Driving Analytics</h2>
 
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <h3 className="text-xl font-semibold text-blue-900 mb-4">Weekly Performance</h3>
-        <div className="space-y-3">
-          {weeklyData.map((day) => (
-            <div
-              key={day.day}
-              className="flex items-center justify-between p-3 bg-blue-50/70 rounded-xl backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
-            >
-              <span className="font-semibold text-blue-900 w-12">{day.day}</span>
-              <div className="flex-1 mx-4">
-                <div className="flex justify-between text-sm text-blue-900/70 mb-1">
-                  <span>Score: {day.score}</span>
-                  <span>{day.distance} km</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-xl font-semibold text-blue-900 mb-4">Weekly Performance</h3>
+            <div className="space-y-3">
+              {weeklyData.map((day) => (
+                <div
+                  key={day.day}
+                  className="flex items-center justify-between p-3 bg-blue-50/70 rounded-xl backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <span className="font-semibold text-blue-900 w-12">{day.day}</span>
+                  <div className="flex-1 mx-4">
+                    <div className="flex justify-between text-sm text-blue-900/70 mb-1">
+                      <span>Score: {day.score}</span>
+                      <span>{day.distance} km</span>
+                    </div>
+                    <div className="w-full bg-blue-200 rounded-full h-3">
+                      <div
+                        className="h-3 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 transition-all duration-500"
+                        style={{ width: `${(day.score / 100) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-blue-900">{day.trips} trips</span>
                 </div>
-                <div className="w-full bg-blue-200 rounded-full h-3">
-                  <div
-                    className="h-3 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 transition-all duration-500"
-                    style={{ width: `${(day.score / 100) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              <span className="text-sm font-semibold text-blue-900">{day.trips} trips</span>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Performance Metrics */}
-      <div>
-        <h3 className="text-xl font-semibold text-blue-900 mb-4">Performance Metrics</h3>
-        <div className="space-y-6">
-          {[
-            { label: "Safety Score", value: 88, max: 100, color: "green" },
-            { label: "Fuel Efficiency", value: 15.2, max: 20, color: "blue" },
-            { label: "On-time Performance", value: 94, max: 100, color: "purple" },
-            { label: "Vehicle Maintenance", value: 85, max: 100, color: "orange" }
-          ].map((metric) => {
-            const percentage = (metric.value / metric.max) * 100;
-            const colorGradient = {
-              green: "from-green-400 to-green-600",
-              blue: "from-blue-400 to-cyan-500",
-              purple: "from-purple-400 to-purple-600",
-              orange: "from-orange-400 to-orange-500"
-            };
-            return (
-              <div
-                key={metric.label}
-                className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-lg"
-              >
-                <div className="flex justify-between mb-2">
-                  <span className="text-blue-900 font-semibold">{metric.label}</span>
-                  <span className="text-blue-900 font-bold">
-                    {metric.value}{metric.label === "Fuel Efficiency" ? " km/l" : ""}
-                  </span>
-                </div>
-                <div className="w-full bg-blue-100 rounded-full h-4">
+          {/* Performance Metrics */}
+          <div>
+            <h3 className="text-xl font-semibold text-blue-900 mb-4">Performance Metrics</h3>
+            <div className="space-y-6">
+              {[
+                { label: "Safety Score", value: 88, max: 100, color: "green" },
+                { label: "Fuel Efficiency", value: 15.2, max: 20, color: "blue" },
+                { label: "On-time Performance", value: 94, max: 100, color: "purple" },
+                { label: "Vehicle Maintenance", value: 85, max: 100, color: "orange" }
+              ].map((metric) => {
+                const percentage = (metric.value / metric.max) * 100;
+                const colorGradient = {
+                  green: "from-green-400 to-green-600",
+                  blue: "from-blue-400 to-cyan-500",
+                  purple: "from-purple-400 to-purple-600",
+                  orange: "from-orange-400 to-orange-500"
+                };
+                return (
                   <div
-                    className={`h-4 rounded-full bg-gradient-to-r ${colorGradient[metric.color]} transition-all duration-500`}
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            );
-          })}
+                    key={metric.label}
+                    className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-lg"
+                  >
+                    <div className="flex justify-between mb-2">
+                      <span className="text-blue-900 font-semibold">{metric.label}</span>
+                      <span className="text-blue-900 font-bold">
+                        {metric.value}{metric.label === "Fuel Efficiency" ? " km/l" : ""}
+                      </span>
+                    </div>
+                    <div className="w-full bg-blue-100 rounded-full h-4">
+                      <div
+                        className={`h-4 rounded-full bg-gradient-to-r ${colorGradient[metric.color]} transition-all duration-500`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-);
-
+  );
 };
 
 // Profile Tab Component

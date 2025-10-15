@@ -196,24 +196,24 @@ const AdminDashboard = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-6 overflow-x-auto pb-2">
-            {tabs.map((tab) => (
-             <button
-  key={tab.id}
-  onClick={() => setActiveTab(tab.id)}
-  className={`flex items-center gap-2 py-3 px-4 border-b-2 font-semibold text-sm rounded-md transition-all duration-300 ease-in-out
-    ${
-      activeTab === tab.id
-        ? 'border-blue-500 text-blue-600 bg-blue-50 shadow-sm'
-        : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-100/50 hover:shadow-md'
-    }`}
->
-  {tab.icon}
-  {tab.label}
-</button>
+          <div className="flex space-x-4 overflow-x-auto pb-2">
+  {tabs.map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id)}
+      className={`flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-300 ease-in-out
+        ${
+          activeTab === tab.id
+            ? 'bg-blue-50 text-blue-700 shadow-inner'
+            : 'text-gray-500 hover:text-blue-700 hover:bg-blue-100/30 hover:shadow-sm hover:scale-105'
+        }`}
+    >
+      {tab.icon}
+      <span className="whitespace-nowrap">{tab.label}</span>
+    </button>
+  ))}
+</div>
 
-            ))}
-          </div>
         </div>
       </div>
 

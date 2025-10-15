@@ -70,9 +70,7 @@ const LandingPage = () => {
               >
                 Enterprise Login
               </Link>
-              <button className="px-6 py-3 font-semibold bg-white/70 backdrop-blur border border-blue-200 text-blue-700 hover:bg-white transition rounded-lg">
-                Book Demo
-              </button>
+             
             </motion.div>
 
             {/* 3-line description */}
