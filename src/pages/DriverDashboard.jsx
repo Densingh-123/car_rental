@@ -259,17 +259,19 @@ const DriverDashboard = () => {
           <div className="flex space-x-6 overflow-x-auto pb-2">
             {tabs.map((tab) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-3 px-1 border-b-2 font-semibold text-sm whitespace-nowrap transition-all ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-blue-900/60 hover:text-blue-700 hover:border-blue-300'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
+  key={tab.id}
+  onClick={() => setActiveTab(tab.id)}
+  className={`flex items-center gap-2 py-3 px-3 rounded-md border-b-2 font-semibold text-sm whitespace-nowrap transition-all duration-300 ease-in-out
+    ${
+      activeTab === tab.id
+        ? 'border-blue-500 text-blue-600 bg-blue-50 shadow-inner'
+        : 'border-transparent text-blue-900/70 hover:text-blue-700 hover:border-blue-400 hover:bg-blue-50/70 hover:shadow-sm hover:scale-[1.03]'
+    }`}
+>
+  {tab.icon}
+  {tab.label}
+</button>
+
             ))}
           </div>
         </div>
@@ -481,51 +483,85 @@ const AnalyticsTab = ({ driverData }) => {
     { day: 'Sun', trips: 2, score: 95, distance: 120 }
   ];
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-white/60 backdrop-blur-lg border border-white/30 rounded-2xl p-6 shadow-lg">
-        <h2 className="text-2xl font-bold text-blue-900 mb-6">Driving Analytics</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Weekly Performance */}
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Weekly Performance</h3>
-            <div className="space-y-3">
-              {weeklyData.map((day, index) => (
-                <div key={day.day} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <span className="font-semibold text-blue-900 w-12">{day.day}</span>
-                  <div className="flex-1 mx-4">
-                    <div className="flex justify-between text-sm text-blue-900/70 mb-1">
-                      <span>Score: {day.score}</span>
-                      <span>{day.distance}km</span>
-                    </div>
-                    <div className="w-full bg-blue-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(day.score / 100) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <span className="text-sm font-semibold text-blue-900">{day.trips} trips</span>
-                </div>
-              ))}
-            </div>
-          </div>
+return (
+  <div className="space-y-6">
+  {/* Weekly Performance */}
+  <div className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-900 mb-6">Driving Analytics</h2>
 
-          {/* Performance Metrics */}
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Performance Metrics</h3>
-            <div className="space-y-4">
-              <MetricItem label="Safety Score" value={88} max={100} color="green" />
-              <MetricItem label="Fuel Efficiency" value={15.2} max={20} color="blue" />
-              <MetricItem label="On-time Performance" value={94} max={100} color="purple" />
-              <MetricItem label="Vehicle Maintenance" value={85} max={100} color="orange" />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <h3 className="text-xl font-semibold text-blue-900 mb-4">Weekly Performance</h3>
+        <div className="space-y-3">
+          {weeklyData.map((day) => (
+            <div
+              key={day.day}
+              className="flex items-center justify-between p-3 bg-blue-50/70 rounded-xl backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
+            >
+              <span className="font-semibold text-blue-900 w-12">{day.day}</span>
+              <div className="flex-1 mx-4">
+                <div className="flex justify-between text-sm text-blue-900/70 mb-1">
+                  <span>Score: {day.score}</span>
+                  <span>{day.distance} km</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-3">
+                  <div
+                    className="h-3 rounded-full bg-gradient-to-r from-blue-400 to-cyan-500 transition-all duration-500"
+                    style={{ width: `${(day.score / 100) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              <span className="text-sm font-semibold text-blue-900">{day.trips} trips</span>
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
+      <div>
+        <h3 className="text-xl font-semibold text-blue-900 mb-4">Performance Metrics</h3>
+        <div className="space-y-6">
+          {[
+            { label: "Safety Score", value: 88, max: 100, color: "green" },
+            { label: "Fuel Efficiency", value: 15.2, max: 20, color: "blue" },
+            { label: "On-time Performance", value: 94, max: 100, color: "purple" },
+            { label: "Vehicle Maintenance", value: 85, max: 100, color: "orange" }
+          ].map((metric) => {
+            const percentage = (metric.value / metric.max) * 100;
+            const colorGradient = {
+              green: "from-green-400 to-green-600",
+              blue: "from-blue-400 to-cyan-500",
+              purple: "from-purple-400 to-purple-600",
+              orange: "from-orange-400 to-orange-500"
+            };
+            return (
+              <div
+                key={metric.label}
+                className="bg-white/50 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-lg"
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="text-blue-900 font-semibold">{metric.label}</span>
+                  <span className="text-blue-900 font-bold">
+                    {metric.value}{metric.label === "Fuel Efficiency" ? " km/l" : ""}
+                  </span>
+                </div>
+                <div className="w-full bg-blue-100 rounded-full h-4">
+                  <div
+                    className={`h-4 rounded-full bg-gradient-to-r ${colorGradient[metric.color]} transition-all duration-500`}
+                    style={{ width: `${percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
-  );
+  </div>
+</div>
+
+);
+
 };
 
 // Profile Tab Component
