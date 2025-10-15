@@ -95,11 +95,12 @@ const LandingPage = () => {
   transition={{ delay: 0.6, duration: 0.9 }}
   className="flex justify-center"
 >
-  <img
-    src="/car.png"
-    alt="Car Tracking"
-    className="w-3/4 max-w-md rounded-2xl shadow-2xl shadow-blue-500/10"
-  />
+<img
+  src="/rent.png"
+  alt="Car Tracking"
+  className="w-[400px] max-w-md"
+/>
+
 </motion.div>
 
         </div>
